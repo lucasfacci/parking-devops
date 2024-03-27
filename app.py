@@ -1,37 +1,46 @@
+from datetime import datetime
 from flask import Flask
+from flask_mongoengine import MongoEngine
 from flask_restful import Resource, Api
-from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+
+app.config['MONGODB_SETTINGS'] = {
+    'db': 'parkingdb',
+    'host': 'mongodb',
+    'port': 27017,
+    'username': 'root',
+    'password': 'root'
+}
+
 api = Api(app)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://root:root@db:5432/parkingdb'
-db = SQLAlchemy()
-db.init_app(app)
+db = MongoEngine(app)
 
 
-class UserModel(db.Model):
-    __tablename__ = "users"
-
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(128), unique=True, nullable=False)
-    active = db.Column(db.Boolean(), default=True, nullable=False)
-
-    def __init__(self, email):
-        self.email = email
-
-
-with app.app_context():
-    db.create_all()
+class ParkingModel(db.Document):
+    id = db.UUIDField(required=True, unique=True)
+    plate = db.StringField(required=True)
+    brand = db.StringField(required=True)
+    model = db.StringField(required=True)
+    color = db.StringField(required=True)
+    entry = db.DateTimeField(required=True, default=datetime.now)
+    exit = db.DateTimeField()
+    status = db.StringField(required=True)
+    total_amount = db.DecimalField(precision=2)
 
 
-class Users(Resource):
+class Parkings(Resource):
     def get(self):
-        users = UserModel.query.all()
-        return users
+        return {"message": "parkings"}
 
 
-api.add_resource(Users, '/users')
+class Parking(Resource):
+    def get(self, id):
+        return {'message', 'parking'}
+
+
+api.add_resource(Parkings, '/parkings')
+api.add_resource(Parking, '/parking', '/parking/<string:id>')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

@@ -1,14 +1,13 @@
 version: '3.9'
 
 services:
-  db:
-    image: postgres:alpine3.18
-    container_name: postgres
+  mongodb:
+    image: mongo
+    container_name: mongodb
     restart: always
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: parkingdb
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
 
   api:
     build:
@@ -19,4 +18,4 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - db
+      - mongodb
