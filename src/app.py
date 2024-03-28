@@ -51,7 +51,7 @@ class Parking(Resource):
         if response:
             return jsonify(response)
 
-        return {'message': 'Parking not found.'}
+        return {'message': 'Parking not found.'}, 404
 
     def post(self):
         data = _user_parser.parse_args()
