@@ -16,6 +16,10 @@ services:
       - 5000:5000
     environment:
       - FLASK_DEBUG=development
+      - MONGODB_DB=parkingdb
+      - MONGODB_HOST=mongodb
+      - MONGODB_USER=root
+      - MONGODB_PASSWORD=root
     restart: always
     volumes:
       - ./src:/app/src
