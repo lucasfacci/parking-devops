@@ -12,4 +12,4 @@ class ParkingModel(db.Document):
     entry = db.DateTimeField(default=datetime.now)
     exit = db.DateTimeField()
     status = db.StringField(required=True)
-    total_amount = db.DecimalField(default=5.00, precision=2)
+    total_amount = db.DecimalField(precision=2)
