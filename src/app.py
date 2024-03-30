@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import jsonify
+from flask import jsonify, make_response
 from flask_restful import Resource, reqparse
 import uuid
 
@@ -23,13 +23,19 @@ _user_parser.add_argument('color',
                           required=True,
                           help='This field cannot be blank.')
 _user_parser.add_argument('entry',
-                          type=lambda x: datetime.strptime(x,'%Y-%m-%dT%H:%M:%S'),
+                          type=(
+                            lambda x: datetime.strptime(x, '%Y-%m-%dT%H:%M:%S')
+                          ),
                           required=False,
-                          help='This field must be of type datetime (e.g. %Y-%m-%dT%H:%M:%S).')
+                          help=("'This field must be of type datetime "
+                                "(e.g. %Y-%m-%dT%H:%M:%S).'"))
 _user_parser.add_argument('exit',
-                          type=lambda x: datetime.strptime(x,'%Y-%m-%dT%H:%M:%S'),
+                          type=(
+                            lambda x: datetime.strptime(x, '%Y-%m-%dT%H:%M:%S')
+                          ),
                           required=False,
-                          help='This field must be of type datetime (e.g. %Y-%m-%dT%H:%M:%S).')
+                          help=("'This field must be of type datetime "
+                                "(e.g. %Y-%m-%dT%H:%M:%S).'"))
 _user_parser.add_argument('status',
                           type=str,
                           required=True,
@@ -76,27 +82,54 @@ class Parking(Resource):
 
     def post_and_put_validations(self, data):
         if data['status'] != 'parked' and data['status'] != 'left':
-            return {'error': True, 'output': {'message': "The 'status' field can only accept 'parked' or 'left' values."}}
+            return {
+                'error': True,
+                'output': {
+                    'message': ("The 'status' field can only accept "
+                                "'parked' or 'left' values.")
+                }
+            }
 
         if data.get('entry') is not None and data.get('exit') is not None:
             if data['exit'] < data['entry']:
-                return {'error': True, 'output': {'message': "The 'exit' datetime field cannot be from before than the 'entry' datetime field."}}
+                return {
+                    'error': True,
+                    'output': {
+                        'message': ("The 'exit' datetime field cannot be from "
+                                    "before than the 'entry' datetime field.")
+                    }
+                }
 
         if data['status'] == 'parked' and data.get('exit') is not None:
-            return {'error': True, 'output': {'message': "The 'exit' field cannot be assigned if the 'status' field is 'parked'."}}
+            return {
+                'error': True,
+                'output': {
+                    'message': ("The 'exit' field cannot be assigned if "
+                                "the 'status' field is 'parked'.")
+                }
+            }
 
         return {'error': False}
 
     def calculate_fields(self, parking, data):
-        if data['status'] == 'left' and data.get('exit') is None and data.get('total_amount') is None:
+        if (data['status'] == 'left'
+                and data.get('exit') is None
+                and data.get('total_amount') is None):
+
             if parking.exit is None:
                 parking.exit = datetime.now()
             if parking.total_amount is None:
-                parking.total_amount = self.calculate_total_amount(parking.entry, parking.exit)
+                parking.total_amount = self.calculate_total_amount(
+                    parking.entry,
+                    parking.exit
+                )
 
         if data.get('exit') is not None and data.get('total_amount') is None:
             if parking.total_amount is None:
-                parking.total_amount = self.calculate_total_amount(parking.entry, parking.exit)
+                parking.total_amount = self.calculate_total_amount(
+                    parking.entry,
+                    parking.exit
+                )
 
     def get(self, uuid):
         try:
@@ -112,7 +145,7 @@ class Parking(Resource):
 
         # Validation
         validation_output = self.post_and_put_validations(data)
-        if validation_output['error'] == True:
+        if validation_output['error'] is True:
             return validation_output['output'], 400
 
         parking = ParkingModel(**data)
@@ -121,7 +154,7 @@ class Parking(Resource):
         self.calculate_fields(parking, data)
 
         parking.save()
-        return jsonify(parking), 201
+        return make_response(jsonify(parking), 201)
 
     def put(self, uuid):
         data = _user_parser.parse_args()
@@ -139,12 +172,12 @@ class Parking(Resource):
 
         # Validation
         validation_output = self.post_and_put_validations(data)
-        if validation_output['error'] == True:
+        if validation_output['error'] is True:
             return validation_output['output'], 400
-        
+
         # Calculated fields
         self.calculate_fields(parking, data)
-        
+
         # Optional fields
         if data.get('entry') is not None:
             parking.entry = data['entry']
@@ -154,7 +187,7 @@ class Parking(Resource):
             parking.total_amount = data['total_amount']
 
         parking.save()
-        return jsonify(parking), 201
+        return make_response(jsonify(parking), 201)
 
     def delete(self, uuid):
         try:
