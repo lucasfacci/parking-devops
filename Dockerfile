@@ -8,8 +8,6 @@ COPY requirements.txt .
 
 RUN python3 -m pip install -r requirements.txt --no-cache-dir
 
-COPY wsgi.py .
-COPY config.py .
-COPY src src
+COPY wsgi.py config.py src/ ./
 
 CMD [ "python", "wsgi.py" ]
