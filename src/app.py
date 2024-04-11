@@ -3,7 +3,7 @@ from flask import jsonify, make_response
 from flask_restful import Resource, reqparse
 import uuid
 
-from .models import ParkingModel
+from .models import HealthCheckModel, ParkingModel
 
 _user_parser = reqparse.RequestParser()
 _user_parser.add_argument('plate',
@@ -44,6 +44,14 @@ _user_parser.add_argument('total_amount',
                           type=int,
                           required=False,
                           help='This field must be of type int.')
+
+
+class HealthCheck(Resource):
+    def get(self):
+        response = HealthCheckModel.objects(status='healthcheck')
+        if not response:
+            HealthCheckModel(status='healthcheck').save()
+        return 'Healthy', 200
 
 
 class Parkings(Resource):
