@@ -1,10 +1,13 @@
-from src import create_app
 import os
+import socket
+from src import create_app
 
-if os.getenv('FLASK_DEBUG') == 'development':
-    app = create_app('config.DevConfig')
+if os.getenv("FLASK_DEBUG") == "development":
+    app = create_app("config.DevConfig")
 else:
-    app = create_app('config.ProdConfig')
+    app = create_app("config.ProdConfig")
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+ip_address = socket.gethostbyname(socket.gethostname())
+
+if __name__ == "__main__":
+    app.run(debug=True, host=ip_address)

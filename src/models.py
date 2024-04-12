@@ -3,6 +3,10 @@ from datetime import datetime
 from .db import db
 
 
+class HealthCheckModel(db.Document):
+    status = db.StringField(required=True)
+
+
 class ParkingModel(db.Document):
     uuid = db.UUIDField(binary=False, required=True)
     plate = db.StringField(required=True)
