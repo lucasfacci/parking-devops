@@ -11,8 +11,8 @@ def create_app(config):
     app.config.from_object(config)
     init_db(app)
 
-    api.add_resource(HealthCheck, '/health')
-    api.add_resource(Parkings, '/parkings')
-    api.add_resource(Parking, '/parking', '/parking/<string:uuid>')
+    api.add_resource(HealthCheck, "/health")
+    api.add_resource(Parkings, "/parkings")
+    api.add_resource(Parking, "/parking", "/parking/<string:uuid>")
 
     return app

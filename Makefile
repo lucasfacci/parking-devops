@@ -1,7 +1,8 @@
 APP = parking-devops
 
 test:
-	@flake8 . --exclude venv # --max-line-length=90
+	@black .
+	@flake8 . --exclude venv
 	@pytest -v --disable-warnings
 
 compose:
