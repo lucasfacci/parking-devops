@@ -17,6 +17,15 @@ setup-dev:
 		--for=condition=ready pod \
 		--selector=app.kubernetes.io/component=controller \
 		--timeout=270s
+	@helm upgrade \
+		--install \
+		--set image.tag=7.0.8 \
+		--set auth.rootPassword="root" \
+		my-release kubernetes/charts/mongodb
+	@kubectl wait \
+		--for=condition=ready pod \
+		--selector=app.kubernetes.io/component=mongodb \
+		--timeout=270s
 
 teardown-dev:
 	@kind delete clusters kind
