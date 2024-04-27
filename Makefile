@@ -1,4 +1,4 @@
-APP = parking-devops
+APP = parking-devops-api
 
 test:
 	@bandit -r . -x '/venv/','/tests/'
@@ -29,3 +29,11 @@ setup-dev:
 
 teardown-dev:
 	@kind delete clusters kind
+
+deploy-dev:
+	@docker build -t $(APP):latest .
+	@kind load docker-image $(APP):latest
+	@kubectl apply -f kubernetes/manifests
+	@kubectl rollout restart deploy parking-devops-api
+
+dev: setup-dev deploy-dev
