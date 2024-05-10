@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: {{ include "parking-devops-api.labels" . | nindent 4 }}
+  name: {{ include "parking-devops-api.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "parking-devops-api.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "parking-devops-api.fullname" . }}
+    spec:
+      containers:
+      - image: {{ .Values.image.registry | default "parking-devops-api" }}:{{ .Values.image.tag | default "latest" }}
+        name: api
+        {{- if .Values.environmentVariables }}
+        env:
+        {{- toYaml .Values.environmentVariables | nindent 8 }}
+        {{- end }}
+        {{- if .Values.environmentVariablesFrom }}
+        envFrom:
+        {{- toYaml .Values.environmentVariablesFrom | nindent 8 }}
+        {{- end }}
+        {{- if .Values.livenessProbe }}
+        livenessProbe:
+        {{- toYaml .Values.livenessProbe | nindent 10 }}
+        {{- else }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.appPort | default 5000 }}
+        {{- end }}
+        {{- if .Values.readinessProbe }}
+        readinessProbe:
+        {{- toYaml .Values.readinessProbe | nindent 10 }}
+        {{- else }}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.appPort | default 5000 }}
+        {{- end }}
