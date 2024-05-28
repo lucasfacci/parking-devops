@@ -77,4 +77,7 @@ jobs:
         run: |
           aws eks update-kubeconfig --name parking-devops-cluster --region us-east-1
 
-          echo ${TAG}
+          helm upgrade --install \
+            --set image.tag=${TAG} \
+            parking-devops-api kubernetes/charts/parking-devops-api \
+            -f kubernetes/charts/parking-devops-api/values-prod.yaml
