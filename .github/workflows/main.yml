@@ -26,9 +26,49 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      ecr_registry: 431628235125.dkr.ecr.us-east-1.amazonaws.com
+      ecr_repository: parking-devops-ecr
 
     steps:
       - uses: actions/checkout@v3
       - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::431628235125:role/parking-devops-gh-actions-oidc-role
+      - name: Build Docker image
         run: |
           aws sts get-caller-identity
+
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ecr_registry}
+
+          sha=${{ github.sha }}
+          short_sha=${sha:0:7}
+
+          docker build -t ${ecr_registry}/${ecr_repository}:dev-${short_sha} .
+          docker push ${ecr_registry}/${ecr_repository}:dev-${short_sha}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::431628235125:role/parking-devops-gh-actions-oidc-role
+      - name: Deploy to Kubernetes
+        run: |
+          aws eks update-kubeconfig --name parking-devops-cluster --region us-east-1
+
+          kubectl get nodes
