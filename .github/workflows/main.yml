@@ -29,10 +29,11 @@ jobs:
     permissions:
       id-token: write
       contents: read
-
     env:
       ecr_registry: 431628235125.dkr.ecr.us-east-1.amazonaws.com
       ecr_repository: parking-devops-ecr
+    outputs:
+      image_tag: ${{ steps.build.outputs.image_tag }}
 
     steps:
       - uses: actions/checkout@v3
@@ -41,7 +42,8 @@ jobs:
         with:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::431628235125:role/parking-devops-gh-actions-oidc-role
-      - name: Build Docker image
+      - id: build
+        name: Build Docker image
         run: |
           aws sts get-caller-identity
 
@@ -52,6 +54,8 @@ jobs:
 
           docker build -t ${ecr_registry}/${ecr_repository}:dev-${short_sha} .
           docker push ${ecr_registry}/${ecr_repository}:dev-${short_sha}
+
+          echo "image_tag=dev-${short_sha}" >> $GITHUB_OUTPUT
 
   deploy:
     needs: build
@@ -67,8 +71,10 @@ jobs:
         with:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::431628235125:role/parking-devops-gh-actions-oidc-role
-      - name: Deploy to Kubernetes
+      - env:
+          TAG: ${{ needs.build.outputs.image_tag }}
+        name: Deploy to Kubernetes
         run: |
           aws eks update-kubeconfig --name parking-devops-cluster --region us-east-1
 
-          kubectl get nodes
+          echo ${TAG}
