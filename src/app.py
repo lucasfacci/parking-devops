@@ -3,7 +3,7 @@ from flask import jsonify, make_response
 from flask_restful import Resource, reqparse
 import uuid
 
-from .models import HealthCheckModel, ParkingModel
+from .models import ParkingModel
 
 _user_parser = reqparse.RequestParser()
 _user_parser.add_argument(
@@ -40,10 +40,7 @@ _user_parser.add_argument(
 
 class HealthCheck(Resource):
     def get(self):
-        response = HealthCheckModel.objects(status="healthcheck")
-        if not response:
-            HealthCheckModel(status="healthcheck").save()
-        return "Healthy", 200
+        return "Healthy Parking API", 200
 
 
 class Parkings(Resource):
