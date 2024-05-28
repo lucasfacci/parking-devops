@@ -26,6 +26,17 @@ setup-dev:
 		--for=condition=ready pod \
 		--selector=app.kubernetes.io/component=mongodb \
 		--timeout=270s
+	@helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
+	@helm upgrade \
+		--install sealed-secrets \
+		-n kube-system \
+		--set-string fullnameOverride=sealed-secrets-controller \
+		sealed-secrets/sealed-secrets
+	@kubectl wait \
+		--for=condition=ready pod \
+		--selector=app.kubernetes.io/instance=sealed-secrets \
+		--timeout=270s \
+		-n kube-system
 
 teardown-dev:
 	@kind delete clusters kind
