@@ -16,6 +16,9 @@ spec:
       containers:
       - image: {{ .Values.image.registry | default "parking-devops-api" }}:{{ .Values.image.tag | default "latest" }}
         name: api
+        {{- if .Values.image.pullPolicy }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- end }}
         {{- if .Values.environmentVariables }}
         env:
         {{- toYaml .Values.environmentVariables | nindent 8 }}
